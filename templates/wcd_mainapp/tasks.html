@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+        
+        
+    </style>
+</head>
+<body>
+    <table>
+        {% csrf_token %}
+        <tr>
+            <th>web_url</th>
+            <th>partOf</th>
+            <th>detection_type</th>
+            <th>hasChanged</th>
+            <th>date_added</th>
+            <th>date_updated</th>
+            <th>edit</th>
+            <th>delete</th>
+        </tr>
+    
+        {% for task in tasks %}
+        <tr id="{{task.id}}">
+            <td contenteditable="true">{{task.web_url}}</td>
+            <td contenteditable="true">{{task.partOf}}</td>
+            <td contenteditable="true">{{task.detection_type}}</td>
+            <td contenteditable="true">{{task.hasChanged}}</td>
+            <td>{{task.date_added}}</td>
+            <td>{{task.date_updated}}</td>
+            <td>
+                <button value="{{task.id}}" onclick=editTask(this.value)>
+                    edit
+                </button>
+            </td>
+            <td>
+                <button value="{{task.id}}" onclick=deleteTask(this.value)>
+                    delete
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    
+    </table>
+    
+</body>
+
+<script>
+    function editTask(idTask) {
+        targetElement = document.getElementById(idTask).querySelectorAll("td")
+        const dataToBackEnd = new FormData()
+        dataToBackEnd.append("web_url", targetElement[0].innerText)
+        dataToBackEnd.append("partOf", targetElement[1].innerText)
+        dataToBackEnd.append("detection_type", targetElement[2].innerText)
+        dataToBackEnd.append("hasChanged", targetElement[3].innerText)
+
+        const request = new Request(`./${idTask}/update/`,
+            {
+                method: "POST",
+                headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+                body: dataToBackEnd
+            }
+        )
+        fetch(request, {
+            method: "POST",
+            mode: 'same-origin'
+        }).then(
+            function (response) {
+                if (response.status === 200) {
+                    location.reload()
+                } else {
+                    alert("error")
+                }
+            }
+        )
+    }
+
+
+    function deleteTask(idTask) {
+        const request = new Request(`./${idTask}/delete/`,
+            {
+                method: "DELETE",
+                headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+            }
+        )
+        fetch(request, {
+            method: "DELETE",
+            mode: 'same-origin'
+        }).then(
+            function (response) {
+                if (response.status === 200) {
+                    location.reload()
+                } else {
+                    alert("error")
+                }
+            }
+        )
+    }
+
+</script>
+
+</html>
