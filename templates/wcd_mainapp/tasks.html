@@ -28,7 +28,7 @@
             <th>web_url</th>
             <th>partOf</th>
             <th>detection_type</th>
-            <th>hasChanged</th>
+            <th>threshold</th>
             <th>date_added</th>
             <th>date_updated</th>
             <th>edit</th>
@@ -40,7 +40,7 @@
             <td contenteditable="true">{{task.web_url}}</td>
             <td contenteditable="true">{{task.partOf}}</td>
             <td contenteditable="true">{{task.detection_type}}</td>
-            <td contenteditable="true">{{task.hasChanged}}</td>
+            <td contenteditable="true">{{task.threshold}}</td>
             <td>{{task.date_added}}</td>
             <td>{{task.date_updated}}</td>
             <td>
@@ -67,7 +67,7 @@
         dataToBackEnd.append("web_url", targetElement[0].innerText)
         dataToBackEnd.append("partOf", targetElement[1].innerText)
         dataToBackEnd.append("detection_type", targetElement[2].innerText)
-        dataToBackEnd.append("hasChanged", targetElement[3].innerText)
+        dataToBackEnd.append("threshold", targetElement[3].innerText)
 
         const request = new Request(`./${idTask}/update/`,
             {

@@ -5,4 +5,4 @@ from .models import Tasks
 
 @admin.register(Tasks)
 class TasksAdmin(admin.ModelAdmin):
-    list_filter = ("detection_type", "hasChanged", "date_added", "date_updated")
+    list_filter = ("detection_type", "date_added", "date_updated")

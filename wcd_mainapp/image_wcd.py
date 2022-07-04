@@ -9,12 +9,17 @@ from loguru import logger
 
 
 class ImageWCD:
-    def __init__(self, url, css, threshold):
+    """
+    Class for Web change detection via Image comparison
+    """
+    def __init__(self, id, url, css, threshold):
+        self.id = id
         self.url = url
         self.css = css
         self.threshold = threshold
         self.folder = "./Image_wcd_helpers"
         # use hosts file to remove ads for more reproducible websites
+        # References: https://github.com/StevenBlack/hosts
         self.hostsfile = "http://sbc.io/hosts/alternates/fakenews-gambling-porn-social/hosts"
         self.indexjs = r"""
             const fs = require('fs');
@@ -71,6 +76,7 @@ class ImageWCD:
                     return
                 }
                 /**
+                * References: https://gist.github.com/shospodarets/b4e8284e42fdaeceab9a67a9b0263743
                 * Takes a screenshot of a DOM element on the page, with optional padding.
                 *
                 * @param {!{path:string, selector:string, padding:(number|undefined)}=} opts
@@ -117,6 +123,10 @@ class ImageWCD:
             """
 
     def compare_images(self, img1, img2):
+        """
+        References: https://stackoverflow.com/a/71634759
+        Compare 2 images and draws a bounding box around the difference of the latest image and returns score
+        """
         before = cv2.imread(img1)
         after = cv2.imread(img2)
 
@@ -130,7 +140,7 @@ class ImageWCD:
         except ValueError as e:
             if "{}".format(e) == "Input images must have the same dimensions.":
                 # images are different
-                cv2.imwrite("images/after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+                cv2.imwrite(f"images/{self.id}_after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
                 return 0
             else:
                 raise e
@@ -161,16 +171,17 @@ class ImageWCD:
                 cv2.drawContours(mask, [c], 0, (0, 255, 0), -1)
                 cv2.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
 
-        cv2.imwrite("images/before" + img1 + img2, before)
-        cv2.imwrite("images/after" + img1 + img2, after)
-        cv2.imwrite("images/after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+        cv2.imwrite(f"images/{self.id}_before" + img1 + img2, before)
+        cv2.imwrite(f"images/{self.id}_after" + img1 + img2, after)
+        cv2.imwrite(f"images/{self.id}_after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
 
         return score
 
 
-
-
     def run(self):
+        """
+        Main function to run
+        """
         logger.debug("changing dir to {}", self.folder)
         os.chdir(self.folder)
         with open("index.js", "w") as f:
@@ -181,24 +192,27 @@ class ImageWCD:
         if not os.path.exists(os.path.join("hosts")):
             logger.debug("downloading hosts file {}", self.hostsfile)
             urllib.request.urlretrieve(self.hostsfile, "hosts")
-        node_cmd = "node index.js " + self.url + " images/new.png '" + self.css + "'"
+        node_cmd = "node index.js " + self.url + f" images/{self.id}_new.png '" + self.css + "'"
         
-        p1 = subprocess.Popen(['node', 'index.js', self.url, 'images/new.png', self.css], stdout=subprocess.PIPE)
+        # to launch pupeteer
+        p1 = subprocess.Popen(['node', 'index.js', self.url, f'images/{self.id}_new.png', self.css], stdout=subprocess.PIPE)
         logger.debug(node_cmd)
         logger.debug("saving new image")
+        # wait for image to be saved
         p1.wait()
-        if os.path.exists("images/last.png"):
+        if os.path.exists(f"images/{self.id}_last.png"):
             logger.debug("comparing images")
-            similarity = self.compare_images("images/last.png", "images/new.png")
+            similarity = self.compare_images(f"images/{self.id}_last.png", f"images/{self.id}_new.png")
             logger.debug("similarity: {}", similarity)
             if similarity < self.threshold:
-                logger.debug("similarity < 0.99, sending email")
-                k = os.path.join(os.path.abspath("."), "after.jpg")
+                logger.debug("similarity less than threshold({})", self.threshold)
+                k = os.path.join(os.path.abspath("."), f"{self.id}_after.jpg")
                 logger.debug(k)
         
-            os.remove("images/last.png")
+            os.remove(f"images/{self.id}_last.png")
         
-        os.rename("images/new.png", "images/last.png")
+        os.rename(f"images/{self.id}_new.png", f"images/{self.id}_last.png")
+        # change dir back to root
         os.chdir("..")
 
 
