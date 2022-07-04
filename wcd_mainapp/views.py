@@ -3,9 +3,25 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from wcd_mainapp.models import Tasks
 from wcd_mainapp.forms import *
-
+from wcd_mainapp.image_wcd import ImageWCD
+from loguru import logger
 
 # Create your views here.
+
+def periodic_task_handler():
+    logger.debug("periodic task handler started")
+    all_tasks = Tasks.objects.all()
+    for task in all_tasks:
+        if task.detection_type == 1:
+            try:
+                ImageWCD(task.id, task.web_url, task.partOf, task.threshold).run()
+                logger.success("Task-{} suceeded", task.id)
+            except:
+                logger.error("Task-{} failed", task.id)
+
+def task_handler(id, url, type, threshold=1.0, css="full"):
+    if type == 1:
+        ImageWCD(id, url, css, threshold).run()
 
 def home(request):
     return render(request, 'wcd_mainapp/home.html')
@@ -21,6 +37,8 @@ def add_tasks(request):
         add_form = TasksCreateForm(request.POST or None)
         if add_form.is_valid():
             add_form.save()
+            data = add_form.cleaned_data
+            task_handler(data['id'], data['web_url'], 1)
             messages.success(request, f"Your Task details has been saved!")
         return redirect('all_tasks')
     else:
@@ -39,6 +57,7 @@ def update_tasks(request, id):
         update_form = TasksUpdateForm(request.POST, instance=instance)
         if update_form.is_valid():
             update_form.save()
+            periodic_task_handler()
             return HttpResponse(status=200)
             # messages.success(request, f"Your Task details has been updated!")
         else:
