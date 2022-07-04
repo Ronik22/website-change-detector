@@ -3,9 +3,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from wcd_mainapp.models import Tasks
 from wcd_mainapp.forms import *
-
+from wcd_mainapp.image_wcd import ImageWCD
 
 # Create your views here.
+
+def task_handler(url, type, threshold=1.0, css="full"):
+    if type == 1:
+        ImageWCD(url, css, threshold).run()
 
 def home(request):
     return render(request, 'wcd_mainapp/home.html')
@@ -21,6 +25,8 @@ def add_tasks(request):
         add_form = TasksCreateForm(request.POST or None)
         if add_form.is_valid():
             add_form.save()
+            data = add_form.cleaned_data
+            task_handler(data['web_url'], 1)
             messages.success(request, f"Your Task details has been saved!")
         return redirect('all_tasks')
     else:

@@ -1,5 +1,8 @@
 # personal
 others
+Image_wcd_helpers/node_modules
+Image_wcd_helpers/hosts
+Image_wcd_helpers/index.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
