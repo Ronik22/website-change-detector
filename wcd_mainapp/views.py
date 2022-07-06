@@ -4,24 +4,11 @@ from django.contrib import messages
 from wcd_mainapp.models import Tasks
 from wcd_mainapp.forms import *
 from wcd_mainapp.image_wcd import ImageWCD
-from loguru import logger
+# from loguru import logger
+from wcd_mainapp.tasks import periodic_task_scheduler, task_scheduler
 
 # Create your views here.
 
-def periodic_task_handler():
-    logger.debug("periodic task handler started")
-    all_tasks = Tasks.objects.all()
-    for task in all_tasks:
-        if task.detection_type == 1:
-            try:
-                ImageWCD(task.id, task.web_url, task.partOf, task.threshold).run()
-                logger.success("Task-{} suceeded", task.id)
-            except:
-                logger.error("Task-{} failed", task.id)
-
-def task_handler(id, url, type, threshold=1.0, css="full"):
-    if type == 1:
-        ImageWCD(id, url, css, threshold).run()
 
 def home(request):
     return render(request, 'wcd_mainapp/home.html')
@@ -36,9 +23,10 @@ def add_tasks(request):
     if request.method == 'POST':
         add_form = TasksCreateForm(request.POST or None)
         if add_form.is_valid():
-            add_form.save()
+            form_saved = add_form.save()
+            print(add_form.cleaned_data)
             data = add_form.cleaned_data
-            task_handler(data['id'], data['web_url'], 1)
+            task_scheduler.delay(form_saved.pk, data['web_url'], 1, 1.0, "full")    # for celery task (demo data for now)
             messages.success(request, f"Your Task details has been saved!")
         return redirect('all_tasks')
     else:
@@ -57,7 +45,7 @@ def update_tasks(request, id):
         update_form = TasksUpdateForm(request.POST, instance=instance)
         if update_form.is_valid():
             update_form.save()
-            periodic_task_handler()
+            periodic_task_scheduler.delay() # for celery beat (scheduled task)
             return HttpResponse(status=200)
             # messages.success(request, f"Your Task details has been updated!")
         else:
@@ -70,8 +58,8 @@ def update_tasks(request, id):
 def delete_tasks(request, id):
     if request.method == "DELETE":
         # if request.user:
-        vehicle = get_object_or_404(Tasks, id=id)
-        vehicle.delete()
+        task = get_object_or_404(Tasks, id=id)
+        task.delete()
         # messages.success(request, f"Deletion Successful!")
         return HttpResponse(status=200)
         # else:
