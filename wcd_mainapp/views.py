@@ -26,7 +26,8 @@ def add_tasks(request):
             form_saved = add_form.save()
             print(add_form.cleaned_data)
             data = add_form.cleaned_data
-            task_scheduler.delay(form_saved.pk, data['web_url'], 1, 1.0, "full")    # for celery task (demo data for now)
+            # task_scheduler.delay(form_saved.pk, data['web_url'], 1, 1.0, "full")    # for celery task (demo data for now)
+            task_scheduler.delay(form_saved.pk, data['web_url'], data['detection_type'], data['threshold'], data['partOf'])    # for celery task (demo data for now)
             messages.success(request, f"Your Task details has been saved!")
         return redirect('all_tasks')
     else:
