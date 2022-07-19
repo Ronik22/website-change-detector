@@ -78,11 +78,16 @@ class TextWCD:
             file1 = open(f"{self.id}_new.html", 'r', encoding="utf8").readlines()
             file2 = open(f"{self.id}_last.html", 'r', encoding="utf8").readlines()
             
-            sm= difflib.SequenceMatcher(None, file1, file2)
-            htmldiffs = self.show_diff(sm)
+            # check similarity ratio
+            similarity = difflib.SequenceMatcher(a=file1,b=file2).ratio()
+            logger.debug("similarity: {}", similarity)
+            if similarity < self.threshold:
+                logger.debug("similarity less than threshold({})", self.threshold)
+                sm= difflib.SequenceMatcher(None, file1, file2)
+                htmldiffs = self.show_diff(sm)
 
-            with open(f"{self.id}_after.html", 'w', encoding="utf8") as outfile:
-                outfile.write(htmldiffs + self.extra_css)
+                with open(f"{self.id}_after.html", 'w', encoding="utf8") as outfile:
+                    outfile.write(htmldiffs + self.extra_css)
 
             os.remove(f"{self.id}_last.html")
             logger.debug("Saving file")

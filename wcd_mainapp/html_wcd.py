@@ -43,11 +43,17 @@ class HtmlWCD:
             file1 = open(f"{self.id}_new.html", 'r', encoding="utf8").readlines()
             file2 = open(f"{self.id}_last.html", 'r', encoding="utf8").readlines()
             # htmlDiffer = difflib.HtmlDiff()
-            htmlDiffer = difflib.HtmlDiff(wrapcolumn=70)
-            htmldiffs = htmlDiffer.make_file(file1, file2)
+            
+            # check similarity ratio
+            similarity = difflib.SequenceMatcher(a=file1,b=file2).ratio()
+            logger.debug("similarity: {}", similarity)
+            if similarity < self.threshold:
+                logger.debug("similarity less than threshold({})", self.threshold)
+                htmlDiffer = difflib.HtmlDiff(wrapcolumn=70)
+                htmldiffs = htmlDiffer.make_file(file1, file2)
 
-            with open(f"{self.id}_after.html", 'w', encoding="utf8") as outfile:
-                outfile.write(htmldiffs)
+                with open(f"{self.id}_after.html", 'w', encoding="utf8") as outfile:
+                    outfile.write(htmldiffs)
 
             os.remove(f"{self.id}_last.html")
             logger.debug("Saving file")
