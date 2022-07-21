@@ -1,9 +1,8 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from wcd_mainapp.models import Tasks
 from wcd_mainapp.forms import *
-from wcd_mainapp.image_wcd import ImageWCD
 # from loguru import logger
 from wcd_mainapp.tasks import periodic_task_scheduler, task_scheduler
 
@@ -27,7 +26,7 @@ def add_tasks(request):
             print(add_form.cleaned_data)
             data = add_form.cleaned_data
             # task_scheduler.delay(form_saved.pk, data['web_url'], 1, 1.0, "full")    # for celery task (demo data for now)
-            task_scheduler.delay(form_saved.pk, data['web_url'], data['detection_type'], data['threshold'], data['partOf'])    # for celery task (demo data for now)
+            task_scheduler.delay(request.user.email, form_saved.pk, data['web_url'], data['detection_type'], data['threshold'], data['partOf'])    # for celery task
             messages.success(request, f"Your Task details has been saved!")
         return redirect('all_tasks')
     else:
@@ -46,7 +45,7 @@ def update_tasks(request, id):
         update_form = TasksUpdateForm(request.POST, instance=instance)
         if update_form.is_valid():
             update_form.save()
-            periodic_task_scheduler.delay() # for celery beat (scheduled task)
+            periodic_task_scheduler.delay(request.user.email) # for celery beat (scheduled task)
             return HttpResponse(status=200)
             # messages.success(request, f"Your Task details has been updated!")
         else:
@@ -67,3 +66,6 @@ def delete_tasks(request, id):
             # return HttpResponse(status=403)
     else:
         return HttpResponse(status=405)
+
+
+
