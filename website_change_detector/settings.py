@@ -12,9 +12,13 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -24,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-k!a&*tc7pew2di&tm_3ky87c2m!h9m+zb-_knabm9ao!biqmd*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -131,6 +135,13 @@ STATICFILES_DIR = [os.path.join(BASE_DIR, 'static'),]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 # Celery Broker - Redis  
 CELERY_BROKER_URL = 'redis://localhost:6379'  
@@ -144,3 +155,4 @@ CELERY_RESULT_BACKEND = 'django-db'
 
 # Celery Beat
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_CRONTAB_SCHEDULE = env('CELERY_BEAT_CRONTAB_SCHEDULE')

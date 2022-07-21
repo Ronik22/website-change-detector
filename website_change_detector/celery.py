@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
 from celery.schedules import crontab
+from website_change_detector import settings
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'website_change_detector.settings')
@@ -17,10 +18,9 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Celery beat
 app.conf.beat_schedule = {
-    # Execute the task every 10 minutes (for Test)
     'website-change-detection': {
         'task': 'wcd_mainapp.tasks.periodic_task_scheduler',
-        'schedule': crontab(minute='*/10'),
+        'schedule': crontab(minute=settings.CELERY_BEAT_CRONTAB_SCHEDULE),
     },
 } 
 

@@ -182,6 +182,8 @@ class ImageWCD:
         """
         Main function to run
         """
+        firsttime = True
+        ischanged = False
         logger.debug("changing dir to {}", self.folder)
         os.chdir(self.folder)
         with open("index.js", "w") as f:
@@ -201,10 +203,12 @@ class ImageWCD:
         # wait for image to be saved
         p1.wait()
         if os.path.exists(f"images/{self.id}_last.png"):
+            firsttime = False
             logger.debug("comparing images")
             similarity = self.compare_images(f"images/{self.id}_last.png", f"images/{self.id}_new.png")
             logger.debug("similarity: {}", similarity)
             if similarity < self.threshold:
+                ischanged = True
                 logger.debug("similarity less than threshold({})", self.threshold)
                 k = os.path.join(os.path.abspath("."), f"{self.id}_after.jpg")
                 logger.debug(k)
@@ -214,6 +218,16 @@ class ImageWCD:
         os.rename(f"images/{self.id}_new.png", f"images/{self.id}_last.png")
         # change dir back to root
         os.chdir("..")
+
+        context = {
+            "firsttime": firsttime,
+            "ischanged": ischanged,
+            "website": self.url,
+            "filepath": self.folder + f"/images/{self.id}_after.jpg",
+            "similarity": None if firsttime else similarity,
+            "threshold": self.threshold
+        }
+        return context
 
 
 
