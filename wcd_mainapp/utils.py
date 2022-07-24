@@ -1,3 +1,4 @@
+import os
 from loguru import logger
 from wcd_mainapp.html_wcd import HtmlWCD
 from wcd_mainapp.image_wcd import ImageWCD
@@ -18,7 +19,7 @@ def task_handler(email, id, url, type, threshold=1.0, css="full"):
         sendMail(email, info["website"], info["filepath"])
 
 
-def periodic_task_handler(email):
+def periodic_task_handler():
     logger.debug("periodic task handler started")
     all_tasks = Tasks.objects.all()
     for task in all_tasks:
@@ -44,7 +45,7 @@ def periodic_task_handler(email):
                 logger.error("Task-{} failed", task.id)
 
         if info["ischanged"] and not info["firsttime"]:
-            sendMail(email, info["website"], info["filepath"])
+            sendMail(task.user.email, info["website"], info["filepath"])
 
 
 def sendMail(to_email, website_name, filepath):
@@ -62,3 +63,27 @@ def sendMail(to_email, website_name, filepath):
         logger.success(f"Email sent to {to_email}")
     except:
         logger.error(f"Sending email to {to_email} failed.")
+    
+    # to remove the comparison file (*_after.*) after sending the mail
+    try:
+        os.remove(filepath)
+    except:
+        logger.error(f"{filepath} cannot be removed.")
+
+
+def res_cleanup(id, detection_type):
+    if detection_type == 1:
+        folder = "./Image_wcd_helpers"
+        filename = f"{id}_last.png"
+    elif detection_type == 2:
+        folder = "./Html_wcd_helpers"
+        filename = f"{id}_last.html"
+    elif detection_type == 3:
+        folder = "./Text_wcd_helpers"
+        filename = f"{id}_last.html"
+
+    os.chdir(folder)
+    if os.path.exists(filename):
+        os.remove(filename)
+    os.chdir("..")
+    logger.debug(f"{filename} cleaned")

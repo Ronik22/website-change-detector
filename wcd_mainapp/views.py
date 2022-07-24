@@ -4,7 +4,8 @@ from django.contrib import messages
 from wcd_mainapp.models import Tasks
 from wcd_mainapp.forms import *
 from django.contrib.auth.decorators import login_required
-from wcd_mainapp.tasks import periodic_task_scheduler, task_scheduler
+from wcd_mainapp.tasks import task_scheduler
+from wcd_mainapp.utils import res_cleanup
 
 # Create your views here.
 
@@ -27,6 +28,7 @@ def add_tasks(request):
             add_form.instance.user = request.user
             form_saved = add_form.save()
             data = add_form.cleaned_data
+            # run for the first time with new data
             task_scheduler.delay(request.user.email, form_saved.pk, data['web_url'], data['detection_type'], data['threshold'], data['partOf'])    # for celery task
             messages.success(request, f"Your Task details has been saved!")
         return redirect('all_tasks')
@@ -44,14 +46,18 @@ def add_tasks(request):
 def update_tasks(request, id):
     if request.method == 'POST':
         instance = get_object_or_404(Tasks, id=id)
+        old_detection_type = instance.detection_type
 
         if not request.user == instance.user:
             return HttpResponse(status=403)
 
         update_form = TasksUpdateForm(request.POST, instance=instance)
         if update_form.is_valid():
+            res_cleanup(id, old_detection_type)   # to cleanup leftover files
             update_form.save()
-            periodic_task_scheduler.delay(request.user.email) # for celery beat (scheduled task)
+            data = update_form.cleaned_data
+            # run for the first time with new data
+            task_scheduler.delay(request.user.email, id, data['web_url'], data['detection_type'], data['threshold'], data['partOf'])    # for celery task
             messages.success(request, f"Your Task details has been updated!")
             return HttpResponse(status=200)
             
@@ -68,6 +74,7 @@ def delete_tasks(request, id):
         task = get_object_or_404(Tasks, id=id)
         if not request.user == task.user:
             return HttpResponse(status=403)
+        res_cleanup(id, task.detection_type)   # to cleanup leftover files
         task.delete()
         messages.success(request, f"Deletion Successful!")
         return HttpResponse(status=200)
