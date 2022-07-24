@@ -1,65 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        table {
-          font-family: arial, sans-serif;
-          border-collapse: collapse;
-          width: 100%;
-        }
-        
-        td, th {
-          border: 1px solid #dddddd;
-          text-align: left;
-          padding: 8px;
-        }
-        
-        
-    </style>
-</head>
-<body>
-    <table>
-        {% csrf_token %}
-        <tr>
-            <th>web_url</th>
-            <th>partOf</th>
-            <th>detection_type</th>
-            <th>threshold</th>
-            <th>date_added</th>
-            <th>date_updated</th>
-            <th>edit</th>
-            <th>delete</th>
-        </tr>
-    
-        {% for task in tasks %}
-        <tr id="{{task.id}}">
-            <td contenteditable="true">{{task.web_url}}</td>
-            <td contenteditable="true">{{task.partOf}}</td>
-            <td contenteditable="true">{{task.detection_type}}</td>
-            <td contenteditable="true">{{task.threshold}}</td>
-            <td>{{task.date_added}}</td>
-            <td>{{task.date_updated}}</td>
-            <td>
-                <button value="{{task.id}}" onclick=editTask(this.value)>
-                    edit
-                </button>
-            </td>
-            <td>
-                <button value="{{task.id}}" onclick=deleteTask(this.value)>
-                    delete
-                </button>
-            </td>
-        </tr>
-        {% endfor %}
-    
-    </table>
-    
-</body>
+{% extends 'wcd_mainapp/base.html' %}
+{% load static %}
 
+{% block title %} Tasks {% endblock title %}
+
+{% block extra_head %} 
+<style>
+    table td,
+    table th {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    }
+    tbody td {
+    font-weight: 700;
+    color: #999999;
+    }
+</style>
+{% endblock extra_head %}
+
+{% block content %}
+
+<section class="container mt-5">
+    {% if tasks %}
+
+    <div class="mb-4 ml-auto">
+        <a href="{% url 'add_tasks' %}" class="btn btn-primary rounded-pill px-3 py-2">
+            <span>+ Add Tasks</span>
+        </a>
+        <div class="my-3">
+            <em><strong>Note:</strong>  To edit details click on the field, change it and then click edit button.</em>
+        </div>
+    </div>
+    <div class=" table-responsive">
+        <table class="table table-bordered">
+            {% csrf_token %}
+            <tr class="">
+                <th>URL</th>
+                <th>Full / XPath</th>
+                <th>Detection Type</th>
+                <th>Threshold</th>
+                <th>Date Added</th>
+                <th>Date Updated</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        
+            {% for task in tasks %}
+            <tr id="{{task.id}}">
+                <td contenteditable="true">{{task.web_url}}</td>
+                <td contenteditable="true">{{task.partOf}}</td>
+                <td contenteditable="true">{{task.detection_type}}</td>
+                <td contenteditable="true">{{task.threshold}}</td>
+                <td>{{task.date_added}}</td>
+                <td>{{task.date_updated}}</td>
+                <td>
+                    <button class="btn btn-warning" value="{{task.id}}" onclick=editTask(this.value)>
+                        Edit
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-danger" value="{{task.id}}" onclick=deleteTask(this.value)>
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        
+        </table>
+    </div>
+
+    {% else %}
+
+    <h2 class ="text-center"> You dont have any task. <a href="{% url 'add_tasks' %}">Create one</a></h2>
+
+    {% endif %}
+</section>
+{% endblock content %}
+    
+
+{% block extra_scripts %} 
 <script>
     function editTask(idTask) {
         targetElement = document.getElementById(idTask).querySelectorAll("td")
@@ -113,5 +132,5 @@
     }
 
 </script>
+{% endblock extra_scripts %}
 
-</html>

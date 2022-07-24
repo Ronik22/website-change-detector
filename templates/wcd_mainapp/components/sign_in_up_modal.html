@@ -1,0 +1,77 @@
+<!-- Login Modal-->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary-to-secondary p-4">
+                <h5 class="modal-title font-alt text-white" id="feedbackModalLabel">Log In</h5>
+                <button class="btn-close btn-close-white" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body border-0 p-4">
+                <form id="loginForm" method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <!-- Username input-->
+                    <div class="form-floating mb-3">
+                        <input required class="form-control" name="username" id="username" type="text" placeholder="Enter your Username..." />
+                        <label for="username">Username</label>
+                    </div>
+                    <!-- Password input-->
+                    <div class="form-floating mb-3">
+                        <input required class="form-control" name="password" id="password" type="password" placeholder="Enter your Password..." />
+                        <label for="password">Password</label>
+                    </div>                  
+                    <!-- Submit Button-->
+                    <div class="d-grid"><button onclick="(e)=>{e.preventDefault();document.getElementById('loginForm').submit();}" class="btn btn-primary rounded-pill btn-lg" id="submitButton" type="button">Log In</button></div>
+                </form>
+                <div class="text-center m-3">
+                    <div class="fw-bolder mb-2">Create an account.</div>
+                    <button class="btn btn-primary" data-bs-target="#feedbackModal2" data-bs-toggle="modal">Sign-Up Instead</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Sign In Modal-->
+<div class="modal fade" id="feedbackModal2" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary-to-secondary p-4">
+                <h5 class="modal-title font-alt text-white" id="feedbackModalLabel2">Sign In</h5>
+                <button class="btn-close btn-close-white" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body border-0 p-4">
+                <form id="signupForm" method="POST" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <!-- Username input-->
+                    <div class="form-floating mb-3">
+                        <input required class="form-control" name="username" id="username" type="text" placeholder="Enter your Username..." />
+                        <label for="username">Username</label>
+                    </div>
+                    <!-- Email address input-->
+                    <div class="form-floating mb-3">
+                        <input required class="form-control" id="email" type="email" placeholder="name@example.com" />
+                        <label for="email">Email address</label>
+                    </div>
+                    <!-- Password input-->
+                    <div class="form-floating mb-3">
+                        <input required class="form-control" name="password" id="password" type="password" placeholder="Enter your Password..." />
+                        <label for="password">Password</label>
+                    </div>       
+                    <!-- Password2 input-->
+                    <div class="form-floating mb-3">
+                        <input required class="form-control" id="password2" type="password"  placeholder="ReEnter your Password..."/>
+                        <label for="password2">Re-enter Password</label>
+                    </div>                    
+                    <!-- Submit Button-->
+                    <div class="d-grid"><button onclick="(e)=>{e.preventDefault();document.getElementById('signupForm').submit();}" class="btn btn-primary rounded-pill btn-lg" id="submitButton2" type="button">Sign In</button></div>
+                </form>
+                <div class="text-center m-3">
+                    <div class="fw-bolder mb-2">Have an account?</div>
+                    <button class="btn btn-primary" data-bs-target="#feedbackModal" data-bs-toggle="modal">Log-In Instead</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

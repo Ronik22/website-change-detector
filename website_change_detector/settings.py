@@ -44,9 +44,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # apps
+    'accounts',
     'wcd_mainapp',
 
     # Third party
+    'crispy_forms',
     'django_celery_results',
     'django_celery_beat',
 ]
@@ -127,8 +129,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-STATICFILES_DIR = [os.path.join(BASE_DIR, 'static'),]
+# STATICFILES_DIR = [os.path.join(BASE_DIR, 'static'),]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -156,3 +159,6 @@ CELERY_RESULT_BACKEND = 'django-db'
 # Celery Beat
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_CRONTAB_SCHEDULE = env('CELERY_BEAT_CRONTAB_SCHEDULE')
+
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
