@@ -6,6 +6,7 @@ from wcd_mainapp.forms import *
 from django.contrib.auth.decorators import login_required
 from wcd_mainapp.tasks import task_scheduler
 from wcd_mainapp.utils import res_cleanup
+from django.db import IntegrityError
 
 # Create your views here.
 
@@ -26,11 +27,17 @@ def add_tasks(request):
         add_form = TasksCreateForm(request.POST or None)
         if add_form.is_valid():
             add_form.instance.user = request.user
-            form_saved = add_form.save()
+            # each task must contain an unique url [for every user]
+            try:
+                form_saved = add_form.save()
+            except IntegrityError as e: 
+                if 'UNIQUE constraint failed' in e.args[0]:
+                    messages.error(request, "You already have a task with the same url")
+                    return redirect('add_tasks')
             data = add_form.cleaned_data
             # run for the first time with new data
             task_scheduler.delay(request.user.email, form_saved.pk, data['web_url'], data['detection_type'], data['threshold'], data['partOf'])    # for celery task
-            messages.success(request, f"Your Task details has been saved!")
+            messages.success(request, "Your Task details has been saved!")
         return redirect('all_tasks')
     else:
         add_form = TasksCreateForm()

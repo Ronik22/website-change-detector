@@ -49,7 +49,19 @@
             <tr id="{{task.id}}">
                 <td contenteditable="true">{{task.web_url}}</td>
                 <td contenteditable="true">{{task.partOf}}</td>
-                <td contenteditable="true">{{task.detection_type}}</td>
+                <td>
+                    <select name="detection_type" id="detection_type">
+                        <option value="1" {% if task.detection_type == 1 %}selected="selected"{% endif %}>
+                            Image
+                        </option>
+                        <option value="2" {% if task.detection_type == 2 %}selected="selected"{% endif %}>
+                            HTML
+                        </option>
+                        <option value="3" {% if task.detection_type == 3 %}selected="selected"{% endif %}>
+                            Text
+                        </option>
+                    </select>
+                </td>
                 <td contenteditable="true">{{task.threshold}}</td>
                 <td>{{task.date_added}}</td>
                 <td>{{task.date_updated}}</td>
@@ -81,11 +93,14 @@
 {% block extra_scripts %} 
 <script>
     function editTask(idTask) {
-        targetElement = document.getElementById(idTask).querySelectorAll("td")
+        const targetElement = document.getElementById(idTask).querySelectorAll("td")
+        const detection_type = document.getElementById('detection_type');
+		const detection_type_option = detection_type.options[detection_type.selectedIndex];
+
         const dataToBackEnd = new FormData()
         dataToBackEnd.append("web_url", targetElement[0].innerText)
         dataToBackEnd.append("partOf", targetElement[1].innerText)
-        dataToBackEnd.append("detection_type", targetElement[2].innerText)
+        dataToBackEnd.append("detection_type", detection_type_option.value)
         dataToBackEnd.append("threshold", targetElement[3].innerText)
 
         const request = new Request(`./${idTask}/update/`,
@@ -103,7 +118,7 @@
                 if (response.status === 200) {
                     location.reload()
                 } else {
-                    alert("error")
+                    alert("error: " + response.statusText)
                 }
             }
         )

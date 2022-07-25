@@ -42,7 +42,14 @@ class ImageWCD:
 
             (async () => {
 
-                const browser = await puppeteer.launch({ headless: true });
+                const browser = await puppeteer.launch({
+                    headless: true,
+                    // these args are for heroku
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                    ],
+                });
                 const page = await browser.newPage();
                 await page.setRequestInterception(true)
 
@@ -65,7 +72,7 @@ class ImageWCD:
                 page.setViewport({ width: 1000, height: 1000, deviceScaleFactor: 1 });
 
                 await page.goto(process.argv[2], { waitUntil: 'networkidle2' });
-                // await page.waitFor(5000);
+                await page.waitForTimeout(3000);
 
                 if (process.argv[4] == 'full') {
                     await page.screenshot({

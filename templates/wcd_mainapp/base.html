@@ -18,6 +18,14 @@
         <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;1,400&amp;display=swap" rel="stylesheet" />
         <!-- Core CSS (includes Bootstrap)-->
         <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+        <style>
+            .msgmessages{
+                height: fit-content;
+                margin: 90px auto 0px auto;
+                z-index: 9998;
+                max-width: 800px;
+            }
+        </style>
         {% block extra_head %} {% endblock extra_head %}
     </head>
     <body id="page-top">
@@ -26,7 +34,7 @@
             <div class="container px-5">
                 <a class="navbar-brand fw-bold" href="/">
                     {% if user.is_authenticated %}
-                    Hello {{user.username}} !
+                    Hello {{user.name}} !
                     {% else %}
                     WCD
                     {% endif %}
@@ -61,6 +69,19 @@
                 </div>
             </div>
         </nav>
+
+        <!-- Messages from backend -->
+        {% if messages %}
+            <div class="msgmessages">
+                {% for message in messages %}
+                    <div class="alert alert-dismissible fade show {% if message.tags %} {{message.tags}} {% else %} alert-warning {% endif %} ">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         {% block content %} {% endblock content %}
         <!-- Footer-->
         <footer class="bg-black text-center py-5">
