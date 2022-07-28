@@ -37,6 +37,12 @@ celery -A website_change_detector.celery worker --pool=solo -l info --logfile=ce
 celery -A website_change_detector beat -l info --logfile=celery.beat.log --detach 
 ```
 
+## Test Coverage
+
+```bash
+coverage run manage.py test && coverage report && coverage html
+```
+
 ## Running Tests
 
 To run tests, run the following command

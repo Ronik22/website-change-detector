@@ -19,6 +19,8 @@ def register_user(request):
             login(request,user)
             messages.success(request, ('You are now registered'))
             return redirect('home')
+        else:
+            return render(request, 'accounts/register.html', {'form': form}, status=400) 
     else:
         form = SignUpForm()
     context = {'form': form}
@@ -39,6 +41,7 @@ def login_user(request):
                 login(request, user)
                 messages.success(request,('Youre logged in'))
                 return redirect('home')
+        return render(request, 'accounts/login.html', {'form': form}, status=400)
     else:
         form = LoginForm()
     context = {'form': form}
