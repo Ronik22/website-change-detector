@@ -13,12 +13,14 @@ def register_user(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
             password = form.cleaned_data['password1']
-            user = authenticate(username=username, password=password)
+            user = authenticate(email=email, password=password)
             login(request,user)
             messages.success(request, ('You are now registered'))
             return redirect('home')
+        else:
+            return render(request, 'accounts/register.html', {'form': form}, status=400) 
     else:
         form = SignUpForm()
     context = {'form': form}
@@ -32,13 +34,14 @@ def login_user(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             user = authenticate(
-                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
                 password=form.cleaned_data['password'],
             )
             if user is not None:
                 login(request, user)
                 messages.success(request,('Youre logged in'))
                 return redirect('home')
+        return render(request, 'accounts/login.html', {'form': form}, status=400)
     else:
         form = LoginForm()
     context = {'form': form}

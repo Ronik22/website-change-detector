@@ -1,9 +1,44 @@
-# website-change-detector
-- Detects website changes (full/part of) using image / html / text comparisons and emails the user a file with the changes highlighted. 
+# Website Change Detector
 
-- User can set a threshold value (default = 1.0). 
+- Detects website changes (full/part of) using image / html / text comparisons and emails the user a file with the changes highlighted.
+
+- User can set a threshold value (default = 1.0).
 
 - For tracking a part of webpage use XPath of the element.
+
+## Demo
+
+### Home page
+
+![Home](./demo/home.png)
+
+### Form page
+
+![Form](./demo/add.png)
+
+### Console page
+
+![Console](./demo/console.png)
+
+### Profile page
+
+![Profile](./demo/profile.png)
+
+### Email SS
+
+![Email](./demo/email.png)
+
+### Image Mode
+
+![Image](./demo/imgc.png)
+
+### Text Mode
+
+![Text](./demo/textc.png)
+
+### HTML Mode
+
+![HTML](./demo/htmlc.png)
 
 ## Adding env variables
 
@@ -32,9 +67,16 @@ celery -A website_change_detector beat -l info
 ```
 
 If you want to run in background
+
 ```bash
 celery -A website_change_detector.celery worker --pool=solo -l info --logfile=celery.log --detach
 celery -A website_change_detector beat -l info --logfile=celery.beat.log --detach 
+```
+
+## Test Coverage
+
+```bash
+coverage run manage.py test && coverage report && coverage html
 ```
 
 ## Running Tests
