@@ -1,7 +1,6 @@
 import subprocess
 import os
 import urllib.request
-from cv2 import threshold
 from skimage.metrics import structural_similarity as ssim
 import cv2
 import numpy as np
@@ -147,7 +146,7 @@ class ImageWCD:
         except ValueError as e:
             if "{}".format(e) == "Input images must have the same dimensions.":
                 # images are different
-                cv2.imwrite(f"images/{self.id}_after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+                cv2.imwrite(f"./{self.id}_after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
                 return 0
             else:
                 raise e
@@ -178,9 +177,9 @@ class ImageWCD:
                 cv2.drawContours(mask, [c], 0, (0, 255, 0), -1)
                 cv2.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
 
-        cv2.imwrite(f"images/{self.id}_before" + img1 + img2, before)
-        cv2.imwrite(f"images/{self.id}_after" + img1 + img2, after)
-        cv2.imwrite(f"images/{self.id}_after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+        cv2.imwrite(f"./{self.id}_before" + img1 + img2, before)
+        cv2.imwrite(f"./{self.id}_after" + img1 + img2, after)
+        cv2.imwrite(f"./{self.id}_after.jpg", after, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
 
         return score
 
@@ -191,8 +190,7 @@ class ImageWCD:
         """
         firsttime = True
         ischanged = False
-        logger.debug("changing dir to {}", self.folder)
-        os.chdir(self.folder)
+
         with open("index.js", "w") as f:
             f.write(self.indexjs)
         if not os.path.exists(os.path.join("node_modules", "puppeteer")):
@@ -201,28 +199,34 @@ class ImageWCD:
         if not os.path.exists(os.path.join("hosts")):
             logger.debug("downloading hosts file {}", self.hostsfile)
             urllib.request.urlretrieve(self.hostsfile, "hosts")
-        node_cmd = "node index.js " + self.url + f" images/{self.id}_new.png '" + self.css + "'"
+        node_cmd = "node index.js " + self.url + f" {self.folder}/{self.id}_new.png '" + self.css + "'"
         
         # to launch pupeteer
-        p1 = subprocess.Popen(['node', 'index.js', self.url, f'images/{self.id}_new.png', self.css], stdout=subprocess.PIPE)
+        p1 = subprocess.Popen(['node', 'index.js', self.url, f'{self.folder}/{self.id}_new.png', self.css], stdout=subprocess.PIPE)
         logger.debug(node_cmd)
         logger.debug("saving new image")
         # wait for image to be saved
         p1.wait()
-        if os.path.exists(f"images/{self.id}_last.png"):
+
+        logger.debug("changing dir to {}", self.folder)
+        os.chdir(self.folder)
+
+        if os.path.exists(f"./{self.id}_last.png"):
             firsttime = False
             logger.debug("comparing images")
-            similarity = self.compare_images(f"images/{self.id}_last.png", f"images/{self.id}_new.png")
+            similarity = self.compare_images(f"./{self.id}_last.png", f"./{self.id}_new.png")
             logger.debug("similarity: {}", similarity)
             if similarity < self.threshold:
                 ischanged = True
                 logger.debug("similarity less than threshold({})", self.threshold)
                 k = os.path.join(os.path.abspath("."), f"{self.id}_after.jpg")
                 logger.debug(k)
+            else:
+                os.remove(f"./{self.id}_after.jpg")
         
-            os.remove(f"images/{self.id}_last.png")
+            os.remove(f"./{self.id}_last.png")
         
-        os.rename(f"images/{self.id}_new.png", f"images/{self.id}_last.png")
+        os.rename(f"./{self.id}_new.png", f"./{self.id}_last.png")
         # change dir back to root
         os.chdir("..")
 
@@ -230,7 +234,7 @@ class ImageWCD:
             "firsttime": firsttime,
             "ischanged": ischanged,
             "website": self.url,
-            "filepath": self.folder + f"/images/{self.id}_after.jpg",
+            "filepath": self.folder + f"/{self.id}_after.jpg",
             "similarity": None if firsttime else similarity,
             "threshold": self.threshold
         }
