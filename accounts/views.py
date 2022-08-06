@@ -4,11 +4,11 @@ from django.contrib.auth.forms import UserChangeForm, PasswordChangeForm
 from django.contrib import messages 
 from .forms import SignUpForm, EditProfileForm, LoginForm
 from django.contrib.auth.decorators import login_required
+from .decorators import unauthenticated_user
 
 
+@unauthenticated_user
 def register_user(request):
-    if request.user.is_authenticated:
-        return redirect('home')
     if request.method =='POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -27,9 +27,8 @@ def register_user(request):
     return render(request, 'accounts/register.html', context) 
 
 
+@unauthenticated_user
 def login_user(request):
-    if request.user.is_authenticated:
-        return redirect('home')
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
